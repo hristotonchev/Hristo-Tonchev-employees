@@ -1,0 +1,47 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Date parser strategies
+    #
+    # Registered as tagged services so the DateParserService receives them
+    # in a predictable priority order via a tagged iterator.
+    # Adding a new format is as simple as creating a new strategy class —
+    # no changes needed here if it implements DateParserStrategyInterface
+    # and uses autoconfigure: true (which it inherits from _defaults above).
+    # ──────────────────────────────────────────────────────────────────────────
+
+    App\Strategy\DateParser\IsoDateParserStrategy:
+        tags:
+            - { name: app.date_parser_strategy, priority: 100 }
+
+    App\Strategy\DateParser\NumericDateParserStrategy:
+        tags:
+            - { name: app.date_parser_strategy, priority: 80 }
+
+    App\Strategy\DateParser\EuropeanDateParserStrategy:
+        tags:
+            - { name: app.date_parser_strategy, priority: 60 }
+
+    App\Strategy\DateParser\UsDateParserStrategy:
+        tags:
+            - { name: app.date_parser_strategy, priority: 40 }
+
+    App\Strategy\DateParser\LongFormDateParserStrategy:
+        tags:
+            - { name: app.date_parser_strategy, priority: 20 }
+
+    App\Service\DateParserService:
+        arguments:
+            $strategies: !tagged_iterator { tag: app.date_parser_strategy, default_priority_method: null }
